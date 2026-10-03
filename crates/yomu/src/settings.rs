@@ -22,6 +22,9 @@ pub struct Settings {
     /// 画面の言語 (None は自動。環境変数と OS の言語設定から決める)
     #[serde(default)]
     pub lang: Option<crate::i18n::Lang>,
+    /// 翻訳で本文を Google に送ることに同意したか (初めて翻訳するときに y/n で聞く。設定画面には出さない)
+    #[serde(default)]
+    pub translate_consent: bool,
 }
 
 /// オン・オフの項目 (名前, 項目, 説明)
@@ -61,6 +64,13 @@ pub fn toggle(name: &str) -> Option<bool> {
     let on = *v;
     save(&s);
     Some(on)
+}
+
+/// 翻訳で本文を Google に送ることに同意したと保存する
+pub fn agree_translate() {
+    let mut s = CURRENT.write().unwrap();
+    s.translate_consent = true;
+    save(&s);
 }
 
 /// 画面の言語を決めて保存する (None は自動)。新しい画面の言語を返す

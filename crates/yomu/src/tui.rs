@@ -372,6 +372,14 @@ enum Confirm {
     Download(PendingSpeech),
     /// 履歴を消す
     ClearHistory(crate::history::ClearRange),
+    /// 翻訳する (初めて翻訳するときに、本文を Google に送ってよいかを聞く)
+    Translate(PendingTranslation),
+}
+
+/// 同意を待っている翻訳
+enum PendingTranslation {
+    Page(translate::Mode),
+    Selection(Vec<String>),
 }
 
 /// 読み上げる言語の決め方 (読み上げの準備の後に detect_lang で決める)
@@ -2322,6 +2330,9 @@ impl App {
         if fetch::is_private() {
             return self.say_here(private_no_translate());
         }
+        if !crate::settings::get().translate_consent {
+            return self.ask_translate(PendingTranslation::Selection(texts));
+        }
         let Some(doc) = self.doc() else { return };
         let (tab, doc, tx) = (self.tab().id, Arc::as_ptr(&doc) as usize, self.tx.clone());
         self.say_here(t!("選んだ文を翻訳中…"));
@@ -2476,12 +2487,21 @@ impl App {
 
     /// e は訳文に置き換え、E は原文の下に訳文を置く (対訳)。同じキーをもう一度押すと原文に戻す。
     /// 画面に見えている段落から先に訳す
+    /// 初めて翻訳するときは、本文を Google に送ってよいかを y/n で聞く (y なら覚えておき、次からは聞かない)
+    fn ask_translate(&mut self, pending: PendingTranslation) {
+        self.confirm = Some(Confirm::Translate(pending));
+        self.say_here(t!("翻訳すると、本文が Google 翻訳に送られます。翻訳しますか? (y/n。y なら次からは聞きません)"));
+    }
+
     fn translate_page(&mut self, mode: translate::Mode) {
         if self.overlay.is_some() {
             return;
         }
         if fetch::is_private() {
             return self.say_here(private_no_translate());
+        }
+        if !crate::settings::get().translate_consent {
+            return self.ask_translate(PendingTranslation::Page(mode));
         }
         let (i, tab) = (self.cur, self.tab().id);
         let top = self.top_block();
@@ -2826,6 +2846,14 @@ impl App {
                 Confirm::Download(_) => self.say_here(t!("ダウンロードを取りやめました")),
                 Confirm::ClearHistory(r) if yes => self.clear_history(r),
                 Confirm::ClearHistory(_) => self.say_here(t!("消すのを取りやめました")),
+                Confirm::Translate(p) if yes => {
+                    crate::settings::agree_translate();
+                    match p {
+                        PendingTranslation::Page(mode) => self.translate_page(mode),
+                        PendingTranslation::Selection(texts) => self.translate_selection(texts),
+                    }
+                }
+                Confirm::Translate(_) => self.say_here(t!("翻訳を取りやめました")),
             };
         }
         // 訳文の枠は、どのキーでも閉じる (Esc は閉じるだけ)

@@ -231,4 +231,6 @@ pub const TABLE: &[(&str, &str)] = &[
     ("ページの入力欄", "Page input field"),
     ("このページには入力欄がありません", "This page has no input fields"),
     ("このページの入力欄は POST で送るフォームなので使えません (ログインなどは未対応)", "This page's input fields are POST forms and cannot be used (logins and the like are not supported)"),
+    ("翻訳すると、本文が Google 翻訳に送られます。翻訳しますか? (y/n。y なら次からは聞きません)", "Translating sends the text of the page to Google Translate. Translate? (y/n; y will not ask again)"),
+    ("翻訳を取りやめました", "Translation cancelled"),
 ];
