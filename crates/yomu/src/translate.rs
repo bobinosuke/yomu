@@ -35,6 +35,8 @@ static TAG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<a\s+i=(\d+)>([^<]*)
 static ANY_TAG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"</?[a-zA-Z][^>]*>").unwrap());
 static LETTER: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"[^\W\d_]").unwrap());
 static URL_ONLY: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^\s*(https?://|www\.)\S*\s*$").unwrap());
+/// 句読点 (直後が空白か文末のもの) と閉じ括弧の前の空白
+static SPACE_BEFORE_CLOSE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\s+([,.;:!?](?:\s|$)|[)\]）」』、。])").unwrap());
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Mode {
@@ -109,7 +111,9 @@ pub fn response_spans(b: &Block, translated: &str) -> Vec<Span> {
     let g = groups(&b.spans);
     if g.len() <= 1 {
         let base = g.into_iter().next().unwrap_or_default();
-        return vec![Span { text: unescape(&ANY_TAG.replace_all(translated, "")), ..base }];
+        let mut out = vec![Span { text: unescape(&ANY_TAG.replace_all(translated, "")), ..base }];
+        tidy_spaces(&mut out);
+        return out;
     }
     let mut out = Vec::new();
     let plain = |text: &str, out: &mut Vec<Span>| {
@@ -130,7 +134,41 @@ pub fn response_spans(b: &Block, translated: &str) -> Vec<Span> {
         }
     }
     plain(&translated[pos..], &mut out);
+    tidy_spaces(&mut out);
     out
+}
+
+/// Google はタグの前後に空白を入れて返すので、リンクの後ろの読点などの前に空白が残る ("safety , and")。
+/// 句読点と閉じ括弧の前の空白を詰める。点の直後に文字が続くもの (.NET など) は句読点とみなさない
+fn tidy_spaces(spans: &mut Vec<Span>) {
+    let closes = |text: &str| {
+        let mut it = text.trim_start().chars();
+        match (it.next(), it.next()) {
+            (Some(')' | ']' | '）' | '」' | '』' | '、' | '。'), _) => true,
+            (Some(',' | '.' | ';' | ':' | '!' | '?'), next) => next.is_none_or(|c| c.is_whitespace() || c.is_ascii_punctuation()),
+            _ => false,
+        }
+    };
+    for i in 1..spans.len() {
+        if !closes(&spans[i].text) {
+            continue;
+        }
+        spans[i].text = spans[i].text.trim_start().to_string();
+        // 前の span の末尾の空白も詰める (空白だけの span は空になる)
+        for j in (0..i).rev() {
+            spans[j].text = spans[j].text.trim_end().to_string();
+            if !spans[j].text.is_empty() {
+                break;
+            }
+        }
+    }
+    // span の中の空白も詰める ("concurrency ." など)
+    for s in spans.iter_mut() {
+        if SPACE_BEFORE_CLOSE.is_match(&s.text) {
+            s.text = SPACE_BEFORE_CLOSE.replace_all(&s.text, "$1").into_owned();
+        }
+    }
+    spans.retain(|s| !s.text.is_empty());
 }
 
 /// 段落を、1 回に送る組に分ける (順番はそのまま)
@@ -248,6 +286,18 @@ mod tests {
         assert_eq!(spans.iter().map(|s| s.text.as_str()).collect::<Vec<_>>(), ["始める前に", "ドキュメント", "をお読みください", "。"]);
         assert_eq!(spans[1].link, Some(0));
         assert_eq!(spans[0].link, None);
+    }
+
+    /// Google がタグの前後に入れた空白を、句読点と閉じ括弧の前では詰める
+    #[test]
+    fn spaces_before_punctuation_are_removed() {
+        let link = |t: &str| Span { link: Some(0), ..Span::new(t) };
+        let b = Block::new(Kind::P, vec![Span::new("メモリ"), link("安全性"), Span::new("、並行性")]);
+        let text = |spans: Vec<Span>| spans.iter().map(|s| s.text.as_str()).collect::<String>();
+        let got = response_spans(&b, "<a i=0>memory </a><a i=1>safety</a> <a i=2>, and concurrency .</a>");
+        assert_eq!(text(got), "memory safety, and concurrency.");
+        let got = response_spans(&b, "<a i=0>uses </a><a i=1>.NET</a><a i=2> (see [2] )</a>");
+        assert_eq!(text(got), "uses .NET (see [2])");
     }
 
     #[test]
