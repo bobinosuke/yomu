@@ -1,188 +1,154 @@
 # yomu
 
-**Y**uto's **O**reore **M**inimal **U**ser-interface browser。本文だけを抜き出して読む、日本語向けの軽量 CLI ブラウザ。
+English | [日本語](README.ja.md) | [한국어](README.ko.md)
 
-- ページからナビ・広告・フッターなどを除き、本文を見出し・箇条書き・表・コードの構造を保ったまま表示する
-- 画像は alt があれば `［画像: alt］` として本文に入れる
-- URL 以外を入れると DuckDuckGo で検索する
-- 接続の挨拶 (TLS・HTTP/2 の指紋) を Firefox と同じにして通信する ([wreq](https://github.com/0x676e67/wreq)。curl_cffi と同じ考え方)。
-  User-Agent は yomu のまま。指紋だけで弾くサイト (Cloudflare の遮断。namu.wiki・Fandom・Medium など) も読める。
-  DuckDuckGo の検索だけは、ブラウザの指紋で送ると確認画面になるので、素の接続で送る (プライベートモードは別。下を参照)
-- PDF は文字を取り出して表示する。表示できない形式は `~/Downloads` に保存する
-- 本文を読み上げられる (手元で動く TTS を使い、ページの文章は外部に送らない)
-- ページを画面の言語 (日本語・英語・韓国語) に翻訳できる (訳文に置き換えるか、原文の下に訳文を並べる。Google 翻訳に本文を送る)
+**yomu** (**Y**uto's **O**reore **M**inimal **U**ser-interface browser) is a lightweight terminal web browser written in Rust, made for reading.
+It pulls the main text out of a page and shows it with its headings, lists, tables and code intact, without the navigation, ads and footers around it.
+You move around with Vimium-style keys, can have the page read aloud by a local text-to-speech model, and can translate it while keeping the original in view.
 
-## インストール
+## Features
+
+- **Reading first.** yomu extracts the main content of each page and lays it out cleanly in the terminal. Press `a` to switch to the whole page. PDFs are shown as text, and other files are saved to `~/Downloads`.
+- **Vimium-style keys.** If you know [Vimium](https://github.com/philc/vimium), you already know yomu: `f` to follow links, `j`/`k` to scroll, `o` to open, `H`/`L` to go back and forward. The mouse works too.
+- **Read aloud in 31 languages.** `S` reads the page with [Supertonic 3](https://huggingface.co/Supertone/supertonic-3), a high-quality TTS model that runs entirely on your machine. The text of the page is never sent anywhere.
+- **Translation that keeps the original.** Inspired by [Immersive Translate](https://immersivetranslate.com/), `E` places the translation right under each original paragraph, and `e` replaces the original instead. Translation uses Google Translate, so the text is sent to Google.
+- **Private mode with Tor (experimental).** `yomu --private` routes all traffic through Tor and keeps no history, tabs or cookies.
+- **Interface in English, Japanese and Korean.** The language follows your system and can be changed in the settings.
+
+yomu does not run JavaScript. Pages that build their content with JavaScript (social media, web apps) cannot be read; press `gx` to open such a page in your usual browser.
+
+## Installation
+
+yomu is developed and tested on macOS. It may build on Linux, but this is not tested yet.
+You need Rust 1.92 or later ([rustup](https://rustup.rs/) is the easiest way to get it).
 
 ```sh
-cargo install --path crates/yomu
+cargo install --git https://github.com/bobinosuke/yomu yomu
 ```
 
-Rust が必要。
-
-## 使い方
+### Building from source
 
 ```sh
-yomu                      # 空のタブで開始 (o で開く、? でキー一覧)
-yomu https://example.com  # URL を開く
-yomu 将棋 ルール           # 検索
-yomu --dump URL           # Markdown を標準出力へ (パイプ用)
-yomu --private            # プライベートモード (Tor を通し、何も残さない)
+git clone https://github.com/bobinosuke/yomu
+cd yomu
+cargo build --release
+./target/release/yomu
 ```
 
-キー操作は [Vimium](https://github.com/philc/vimium) の既定に合わせている。起動後 `?` で一覧が出る。
+The build downloads a prebuilt ONNX Runtime (used for text-to-speech), so it needs a network connection the first time.
 
-| キー | 操作 |
+## Usage
+
+```sh
+yomu                       # start with an empty tab (o to open, ? for help)
+yomu https://example.com   # open a URL
+yomu rust ownership        # anything that is not a URL is searched on DuckDuckGo
+yomu --dump URL            # print the page as Markdown (useful in pipes)
+yomu --private             # private mode (Tor)
+```
+
+Press `?` inside yomu to see every key. The most common ones:
+
+| Key | Action |
 |---|---|
-| `j` `k` / `h` `l` | 上下 / 左右にスクロール |
-| `d` `u` / `gg` `G` | 半ページ / 先頭・末尾 |
-| `f` / `F` | 画面内のリンクにラベルを出して開く / 新しいタブで開く |
-| `yf` / `yy` | リンクの URL / 今の URL をコピー |
-| `[[` `]]` | 「前へ」「次へ」のリンクを開く (検索結果の前後のページも) |
-| `o` `O` | URL を開く・検索。履歴とブックマークから候補を出す (`O` は新しいタブ) |
-| `b` `B` | ブックマークから開く (`B` は新しいタブ) |
-| `ge` `gE` | 今の URL を編集して開く |
-| `p` `P` | クリップボードの URL・語を開く |
-| `gu` `gU` | URL を1階層上 / サイトのトップへ |
-| `/` `n` `N` | ページ内検索 / 次 / 前 |
-| `v` / `V` | ビジュアルモード (`v` でカーソル、もう一度 `v` で選択。`V` は行単位)。`y` でコピー |
-| `H` `L` | 戻る / 進む |
-| `t` `x` `X` | 新しいタブ / 閉じる / 閉じたタブを戻す |
-| `J` `gT` / `K` `gt` / `g0` `g$` / `^` | 左 / 右 / 最初・最後 / 直前のタブ |
-| `yt` `<<` `>>` | タブを複製 / 左右へ移動 |
-| `m`+英字 / `` ` ``+英字 / ` `` ` | 位置を記録 / そこへ移動 / ジャンプ前へ |
-| 数字+コマンド | 回数指定 (`5j` など) |
-| `r` / `?` / `Esc` | 再読み込み / ヘルプ / 取り消し |
+| `j` `k` / `h` `l` | Scroll down, up / left, right |
+| `d` `u` / `gg` `G` | Half a page down, up / top, bottom |
+| `f` / `F` | Show labels on links and open one / open it in a new tab |
+| `o` / `O` | Open a URL or search, with suggestions from history and bookmarks / in a new tab |
+| `H` `L` | Back / forward |
+| `[[` `]]` | Follow the "previous" / "next" link |
+| `/` `n` `N` | Find in page / next / previous match |
+| `v` `V` | Visual mode (select text by character / by line), `y` to copy |
+| `t` `x` `X` | New tab / close tab / reopen closed tab |
+| `J` `K` | Previous / next tab |
+| `yy` / `yf` | Copy the page URL / a link URL |
+| `r` / `Esc` | Reload / cancel |
 
-マウスでは、リンクをクリックして開く (中ボタンか Ctrl+クリックで新しいタブ)、タブの一覧のタブをクリックして切り替える (中ボタンで閉じる)、
-題名の行 (URL) をクリックして URL を編集する、入力欄の候補をクリックして開く・入力した文字の上をクリックしてカーソルを移す、ができる。
-ホイールでスクロールする。本文の上でドラッグすると文字を選び (ビジュアルモードの選択と同じ)、離すとコピーする。
-選んだまま `S` を押すと選んだ文だけを読み上げる。画面の上下の外までドラッグするとスクロールしながら選ぶ。
-リンクは、押して動かさずに離したときに開く。マウスを乗せたリンクは反転し、状態行にリンク先の URL が出る。
+And the keys that are specific to yomu:
 
-yomu 独自のキー: `s` 検索、`a` 本文抽出 ⇔ ページ全体、`gb` ブックマークに追加 / 削除、`S` 読み上げ / 停止、`e` / `E` 翻訳 (置き換え / 対訳)、`gx` 今のページを普段のブラウザで開く、`q` 終了。
+| Key | Action |
+|---|---|
+| `s` | Search |
+| `a` | Switch between the extracted text and the whole page |
+| `S` | Read aloud from the top of the screen / stop |
+| `e` / `E` | Translate the page (replace / show both) |
+| `gi` | Type into an input field on the page (such as a search box) and submit it |
+| `gb` | Add or remove a bookmark |
+| `gh` | History (you can also clear the last hour, today, or everything) |
+| `gs` | Settings |
+| `gp` | Switch private mode on or off |
+| `gx` | Open the page in your usual browser |
+| `q` | Quit |
 
-`gs` で設定画面を開く。項目を `f` のラベルかクリックで選ぶとオン・オフが切り替わる (どれも最初はオフ。`settings.json` に残る)。
+You can also click links (middle-click or Ctrl+click for a new tab), click tabs to switch, scroll with the wheel, and drag to select text.
 
-- **言語 (Language)**: 画面の言語。自動・日本語・English・한국어 を並べてあるので、使いたいものを選ぶ。
-  最初は自動で、環境変数 (`LC_ALL` → `LC_MESSAGES` → `LANG`) → macOS の言語設定の順に見て決め、対応していない言語なら英語にする。
-  翻訳の訳し先 (`e` / `E`)、検索の地域 (日本 / 地域なし / 韓国)、サイトに名乗る言語 (`Accept-Language`) もこの言語に合わせる
-  (プライベートモードはいつも英語を名乗る)
+### Settings
 
-- **Cookie をファイルに残す**: 期限つきの Cookie を終了するときに `cookies.json` (権限 600、平文) に保存し、次に起動したときに読み込む。
-  Cookie の同意やログインを覚えておける。オフにするとファイルを消す
-- **広告・追跡のリンクを消す**: リンクの URL から追跡用の値 (`utm_*`・`fbclid` など) を除き、広告・追跡・アフィリエイトの
-  サービスへのリンクを外す (そういうリンクだけの段落は段落ごと除く)。広告の多くは JavaScript で差し込まれるので、
-  主に HTML に直接書かれたアフィリエイトのリンクに効く
-- **画像を表示する**: 画像だけの段落 (記事の図や写真) の画像を裏で取ってきて、段落の下に描く。Kitty・Ghostty は Kitty の方式、
-  iTerm2・WezTerm などは iTerm2 の方式、それ以外の端末 (Mac 標準のターミナル・tmux の中など) は半角ブロックの色で粗く描く。
-  描き方は環境変数から決める (端末への問い合わせは、操作中のキー入力を奪うので使わない)
+`gs` opens the settings. Choose an item with its `f` label or a click.
 
-`gh` で履歴の画面を開く。日付ごとに並び、選ぶとそのページを開く。上の「1 時間以内」「昨日と今日」「すべて」を選ぶと、
-`y` / `n` で確かめてから履歴を消す (タブごとの戻る・進むの履歴は消さない)。
+- **Language**: the interface language (Auto, 日本語, English, 한국어). It also decides the target language of translation and the region of search. Auto follows `LC_ALL`, `LC_MESSAGES`, `LANG` and then the macOS language setting.
+- **Save cookies to a file**: remember cookie consent and logins between runs.
+- **Remove ad and tracking links**: strip tracking parameters such as `utm_*` from links and drop links to ad and tracking services.
+- **Show images**: draw images inside the terminal (Kitty, Ghostty, iTerm2, WezTerm and others; other terminals get a rough block-character rendering).
 
-履歴とブックマークは `~/.local/share/yomu/` (`XDG_DATA_HOME` があればその下) に保存する。
-終了したときに開いていたタブ (各タブの履歴と読んでいた位置) も `session.json` に保存し、次に起動したときに開き直す。
-見ていたタブだけを読み込み、ほかのタブは切り替えたときに読み込む。URL や検索語を渡して起動したときは、前回のタブの後ろに新しいタブで開く。
-すべてのタブを閉じて終了すると、次は新しいタブから始まる。
+History, bookmarks and your open tabs are saved under `~/.local/share/yomu/`, and tabs are reopened the next time you start yomu.
 
-macOS では、日本語入力のままでもキー操作が効くよう、操作中は自動で英数入力に切り替える (入力欄ではかなに戻す)。
-ターミナルにアクセシビリティの許可 (システム設定 → プライバシーとセキュリティ → アクセシビリティ) があれば「英数」「かな」キーと同じキーイベントで、
-なければ入力ソースの API で切り替える (API だけでは、ターミナルによっては切り替わらないことがある)。
-切り替えたくないときは `--keep-ime`。
+### Reading aloud
 
-## 読み上げ
+The first time you press `S`, yomu asks before downloading what it needs (about 770 MB in total): the Supertonic 3 model, dictionaries for reading English words inside Japanese text, and language-detection data. Everything is stored in `~/.cache/yomu`.
+yomu picks the language of the page and reads it in one of 31 languages, including English, Japanese, Korean, French, German, Spanish and Russian. Select text in visual mode and press `S` to read just that part.
 
-`S` で、画面の一番上に見えている段落から読み上げる。もう一度 `S` で停止。
-ビジュアルモード (`v`) で文を選んで `S` を押すと、選んだ文だけを読む。言語はページではなく選んだ文から決めるので、
-日本語のページの中の英文だけを選べば英語で読む。キャレットモード (`c`) でカーソルを置いて `S` を押すと、その文から最後まで読む。
-タブを切り替えても読み続け、読んでいる段落に合わせて画面がスクロールする。
+### Translation
 
-- TTS は [Supertonic 3](https://huggingface.co/Supertone/supertonic-3)。日本語・英語・韓国語・フランス語など 31 言語を同じ声で読む。
-  ページの言語は、日本語の文字が多ければ日本語、そうでなければページが宣言した言語 (`<html lang>`)、
-  宣言がなければ本文から推定して決める。読めない言語 (中国語・タイ語など) のページは読み上げない
-  日本語の文の中の英単語は、辞書の読み (ChatGPT → チャットジーピーティー など) か、辞書になければ
-  [kanalizer](https://github.com/VOICEVOX/kanalizer) でカタカナにしてから読む (英語の発音が混ざらないように)
-- 初回の `S` では、ダウンロードしてよいかを状態行で聞く (`y` で始める。それ以外のキーで取りやめ)。
-  `y` を押すと、読み上げのモデル (約 400MB) を `~/.cache/yomu/supertonic-3` に、
-  英単語の読みに使う辞書 (OpenJTalk の辞書と [AivisSpeech Engine](https://github.com/Aivis-Project/AivisSpeech-Engine) の内蔵辞書、合わせて約 330MB) を
-  `~/.cache/yomu` に、ページの言語の判定に使う [lingua](https://github.com/pemistahl/lingua-rs) の統計データ
-  (35 言語、約 170MB。crates.io の lingua-*-language-model から取り出す) を `~/.cache/yomu/lingua` にダウンロードする。
-  合わせて約 770MB で、状態行に全体の量で進み具合を出す。ダウンロード中に `S` を押すと中断し、次の `S` で続きから再開する。
-  モデルのライセンスは OpenRAIL-M (使い方の制限あり)。
-  AivisSpeech の辞書ごとの元データのライセンスは、配布元のリポジトリに明記されていない
-- 読むのは本文だけ。ナビやリンクの一覧、脚注・参考文献、画像の alt、URL、コード、表は読まない
+`E` shows the translation under each original paragraph, and `e` replaces the original. Press the same key again to go back to the original. You can also select text and press `E` to translate only the selection. Pages are translated into the interface language. The first time you translate, yomu asks whether it is OK to send the text to Google (`y`/`n`); after `y` it does not ask again.
 
-## 翻訳
+### Private mode (experimental)
 
-`e` でページを画面の言語 (日本語・英語・韓国語) に翻訳し、原文を訳文に置き換える ([TWP](https://github.com/FilipePS/Traduzir-paginas-web) と同じ)。
-`E` では原文の段落のすぐ下に訳文を並べる ([Immersive Translate](https://immersivetranslate.com/) と同じ対訳)。
-短い見出しや項目は同じ行の後ろに訳文を付ける。対訳の訳文は青緑で描き、原文の下に置いたものには頭に `↳` を付ける。
-同じキーをもう一度押すと原文に戻す。
-ビジュアルモード (`v`) かドラッグで文を選んで `E` を押すと、選んだ文だけを訳し、選んだ所のすぐ下に枠で出す (対訳と同じく原文は残す。`Esc` で閉じる)。
+Start yomu with `--private`, or press `gp` at any time. yomu restarts itself so that nothing is shared with normal mode.
 
-- 翻訳は Google 翻訳 (キーのいらない translate.googleapis.com)。**本文が Google に送られる**
-- 画面に見えている段落から先に訳し、訳せたところから表示する
-- 段落の中のリンク・太字などは訳文でも残す (訳文の語順に合わせて並ぶ)
-- 訳すのは見出し・段落・箇条書き・引用。コードと表は訳さない。すでに訳し先の言語の段落はそのまま
-  (日本語ならかな、韓国語ならハングルを含む段落。英語は `lang="en"` のページならページごと。ほかは Google の判定に任せる)
-- 別のページへ移ると原文に戻る
+- All traffic goes through Tor, using [Arti](https://gitlab.torproject.org/tpo/core/arti) built into yomu. DNS lookups happen at the Tor exit, and `.onion` sites work.
+- Each site gets its own Tor circuit, like first-party isolation in Tor Browser.
+- Only HTTPS pages are opened (`.onion` sites excepted).
+- yomu presents itself as Tor Browser, matching its User-Agent, TLS and HTTP/2 fingerprints and headers.
+- History, tabs and cookies are never written to disk. Translation and `gx` are disabled, because they would leave Tor.
 
-## JavaScript
+This is experimental. Individual requests are hard to tell apart from Tor Browser, but yomu behaves differently: it does not load JavaScript, CSS or fonts, and loads only some images. A site that looks closely at how pages are loaded can guess that you are using yomu. What it hides is your IP address and your movement between sites. If you need strong anonymity, use Tor Browser.
 
-ページの JavaScript は動かさない (本文を抜き出して読むブラウザなので、サーバーが返した HTML だけを読む)。
-JavaScript で本文を組み立てるページ (SNS や Web アプリなど) は読めない。本文がほとんど取れず JavaScript が要りそうなページでは
-状態行に案内を出すので、`gx` で普段のブラウザで開く。
+## Acknowledgements
 
-## プライベートモード
+yomu takes many ideas from these projects and services:
 
-`yomu --private` で起動するか、使っている途中で `gp` (設定画面の「プライベートモード」でも) を押すと、プライベートモードになる
-(状態行に「プライベート (Tor)」と出る)。もう一度 `gp` で普段のモードに戻る。
-切り替えるときは、普段とプライベートでメモリの中の Cookie や読み込んだページを共有しないよう、yomu を起動し直す。
-普段のタブは保存しておき、普段に戻ると開き直す。プライベートのタブと Cookie は捨てる。
-Tor Browser の振る舞いのうち、yomu に当てはまるものに合わせている。
+- [Vimium](https://github.com/philc/vimium): the key bindings
+- [Immersive Translate](https://immersivetranslate.com/): bilingual translation that keeps the original
+- [Translate Web Pages (TWP)](https://github.com/FilipePS/Traduzir-paginas-web): translating a page in place while keeping links and formatting
+- [Tor Browser](https://www.torproject.org/): the behavior of private mode
+- [curl_cffi](https://github.com/lexiforest/curl_cffi): the idea of matching a real browser's connection fingerprint
+- [DuckDuckGo](https://duckduckgo.com/) for search and [Google Translate](https://translate.google.com/) for translation
 
-- すべての通信を Tor に通す ([Arti](https://gitlab.torproject.org/tpo/core/arti) を組み込み、yomu の中の SOCKS の窓口を経由する)。
-  名前の解決も Tor の出口で行い、自分の回線から DNS の問い合わせを出さない。.onion のサイトも開ける
-- サイト (first party) ごとに別の回線を使う (Tor Browser の first-party isolation と同じ)。ページの画像などは、
-  そのページの回線で、Cookie を送らずに取る。ページを開くときによそのサイトへ転送されたら、転送先のサイトの回線で開き直す
-- HTTPS のページだけを開く (http の URL は https に読み替え、http への転送は断る。.onion は除く)
-- Tor Browser (安定版の 15。Firefox ESR 140) を名乗る。User-Agent・接続の挨拶 (TLS・HTTP/2)・ヘッダーの値と順番を
-  合わせ、ページを開くときと画像を取るときで Firefox と同じように替える。言語は英語 (`Accept-Language: en-US`)。
-  OS は Tor Browser と同じく、種類だけ本当のものを名乗る (macOS なら `Intel Mac OS X 10.15`)
-- 画像を取るときの Referer は、よそのサイトにはページのオリジン (`https://example.com/`) だけを送る (普段のモードも同じ)
-- 検索は DuckDuckGo の .onion を使う
-- つなげなかったときは、Tor が返した理由 (出口から接続先に届かない・.onion が見つからない・回線を作れないなど) を出す。
-  .onion は回線が長くて時間がかかるので、120 秒まで待つ (ほかは 60 秒)
-- 履歴・開いていたタブ・Cookie をディスクに残さない (Cookie はメモリだけで、終了すると消える)。前回のタブも開き直さない
-- 翻訳は使えない (本文が Google に送られるため)。`gx` (普段のブラウザで開く) も Tor を通らないので使えない。
-  読み上げは手元で動くので使えるが、データの初回のダウンロードはしない
-- Tor の作業用データ (ネットワークの一覧・入口のリレー) は `~/.cache/yomu/arti` に残す (閲覧の情報は入らない)。
-  初回の接続には 15 秒ほどかかる
+### Open source software
 
-通信の 1 本ずつは Tor Browser と見分けにくいが、振る舞いまでは同じでない。JavaScript・CSS・フォントを取らず、
-画像も本文の一部しか取らない。リンクをたどっても、毎回 URL を入れて開いたときと同じ要求になる (Referer を送らない)。
-相手のサイトが読み込み方まで見れば、yomu だと見当がつく。隠せるのは自分の IP アドレスと、サイトをまたいだ行き来。
+| Project | Used for |
+|---|---|
+| [Supertonic 3](https://huggingface.co/Supertone/supertonic-3) | Text-to-speech model (downloaded on first use) |
+| [ONNX Runtime](https://onnxruntime.ai/) via [ort](https://github.com/pykeio/ort) | Running the TTS model |
+| [OpenJTalk](https://open-jtalk.sourceforge.net/) dictionary from [pyopenjtalk-plus](https://github.com/tsukumijima/pyopenjtalk-plus) | Japanese text analysis for TTS |
+| [AivisSpeech Engine](https://github.com/Aivis-Project/AivisSpeech-Engine) dictionaries | Readings of words for Japanese TTS |
+| [kanalizer](https://github.com/VOICEVOX/kanalizer) | Reading English words in Japanese text |
+| [lingua-rs](https://github.com/pemistahl/lingua-rs) | Detecting the language of a page |
+| [rs-trafilatura](https://github.com/Murrough-Foley/rs-trafilatura) | Main content extraction |
+| [html5ever](https://github.com/servo/html5ever), [dom_query](https://github.com/niklak/dom_query), [scraper](https://github.com/rust-scraper/scraper) | HTML parsing |
+| [ratatui](https://github.com/ratatui/ratatui), [ratatui-image](https://github.com/ratatui/ratatui-image), [crossterm](https://github.com/crossterm-rs/crossterm) | Terminal interface and images |
+| [wreq](https://github.com/0x676e67/wreq), [wreq-util](https://github.com/0x676e67/wreq-util) | HTTP with browser fingerprints |
+| [Arti](https://gitlab.torproject.org/tpo/core/arti) | Tor in private mode |
+| [tokio](https://github.com/tokio-rs/tokio) | Async runtime |
+| [encoding_rs](https://github.com/hsivonen/encoding_rs), [chardetng](https://github.com/hsivonen/chardetng) | Character encodings (Shift_JIS, EUC-JP and more) |
+| [pdf-extract](https://github.com/jrmuizel/pdf-extract) | Text from PDFs |
+| [image](https://github.com/image-rs/image) | Decoding images |
+| [cpal](https://github.com/rustaudio/cpal) | Audio output |
+| [mimalloc](https://github.com/purpleprotocol/mimalloc_rust) | Memory allocator |
 
-## 開発
+## License
 
-```sh
-cargo test
-```
+yomu is available under either the [MIT License](LICENSE-MIT) or the [Apache License 2.0](LICENSE-APACHE), at your option.
 
-本文抽出を実在のページで確かめるテスト (`tests/extract.rs` の `real_pages`) は、保存したページ (第三者の著作物なので
-リポジトリには入れない) のディレクトリを `YOMU_TEST_PAGES` で渡したときだけ動く。
-
-`vendor/lingua` は lingua 1.8.0 (Apache-2.0) を、統計データを埋め込まずに実行時にディレクトリから読むように変えたもの
-(バイナリが 180MB ほど小さくなる)。変えたのは `src/file.rs` と `src/lib.rs` だけ。
-
-## ライセンス
-
-yomu は MIT License と Apache License 2.0 のどちらか好きな方で使える ([LICENSE-MIT](LICENSE-MIT)・[LICENSE-APACHE](LICENSE-APACHE))。
-
-- `vendor/lingua` は [lingua](https://github.com/pemistahl/lingua-rs) 1.8.0 を変えたもので、Apache License 2.0 のまま
-  (変えたファイルには、変えたことを書いてある)
-- 依存しているクレートは、それぞれのライセンスに従う (ほとんどが MIT か Apache-2.0)
-- 読み上げのデータ (Supertonic 3 のモデル・OpenJTalk の辞書・AivisSpeech の辞書・lingua の言語モデル) は yomu に含めず、
-  初めて読み上げるときに、それぞれの配布元から手元にダウンロードする。どれもそれぞれのライセンスに従う
-  (Supertonic 3 のモデルは OpenRAIL。AivisSpeech の辞書には、GPL など辞書ごとに違うライセンスのものが含まれる)
+`vendor/lingua` is a modified copy of [lingua](https://github.com/pemistahl/lingua-rs) 1.8.0 and stays under the Apache License 2.0. The TTS model, dictionaries and language data are not included in yomu; they are downloaded from their original sources on first use and are covered by their own licenses (the Supertonic 3 model is under OpenRAIL-M).
