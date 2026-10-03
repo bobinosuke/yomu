@@ -6,7 +6,9 @@
 ページからナビゲーションや広告、フッターを取り除いて本文だけを抜き出し、見出しや箇条書き、表、コードの構造を保ったまま表示します。
 Vimium と同じキーで操作でき、手元で動く音声合成で読み上げたり、原文を残したまま翻訳したりできます。
 
-<img src="docs/images/main-text.png" width="760" alt="The Rust Programming Language の章を、yomu で本文だけ表示したところ">
+<img src="docs/images/main-text.png" width="760" alt="英語版 Wikipedia の記事 Text-based web browser を yomu で表示し、すべてのリンクにラベルを出したところ">
+
+<sub>画像のページは、英語版 Wikipedia の「[Text-based web browser](https://en.wikipedia.org/wiki/Text-based_web_browser)」です([CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/))。</sub>
 
 ## 特徴
 

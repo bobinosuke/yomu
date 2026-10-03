@@ -6,7 +6,9 @@
 페이지에서 내비게이션, 광고, 푸터를 걷어 내고 본문만 뽑아서, 제목, 목록, 표, 코드의 구조를 그대로 살려 보여 줍니다.
 Vimium과 같은 키로 조작할 수 있고, 내 컴퓨터에서 돌아가는 음성 합성으로 페이지를 읽어 주거나 원문을 남긴 채 번역할 수도 있습니다.
 
-<img src="docs/images/main-text.png" width="760" alt="The Rust Programming Language의 한 장을 yomu로 본문만 표시한 화면">
+<img src="docs/images/main-text.png" width="760" alt="영어 위키백과 문서 Text-based web browser를 yomu로 표시하고 모든 링크에 라벨을 띄운 화면">
+
+<sub>화면의 페이지는 영어 위키백과의 「[Text-based web browser](https://en.wikipedia.org/wiki/Text-based_web_browser)」입니다([CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)).</sub>
 
 ## 특징
 

@@ -6,7 +6,9 @@ English | [日本語](README.ja.md) | [한국어](README.ko.md)
 It pulls the main text out of a page and shows it with its headings, lists, tables and code intact, without the navigation, ads and footers around it.
 You move around with Vimium-style keys, can have the page read aloud by a local text-to-speech model, and can translate it while keeping the original in view.
 
-<img src="docs/images/main-text.png" width="760" alt="yomu showing the main text of a chapter of The Rust Programming Language">
+<img src="docs/images/main-text.png" width="760" alt="yomu showing the Wikipedia article Text-based web browser, with a label on every link">
+
+<sub>The page shown is [Text-based web browser](https://en.wikipedia.org/wiki/Text-based_web_browser) on English Wikipedia, licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).</sub>
 
 ## Features
 
