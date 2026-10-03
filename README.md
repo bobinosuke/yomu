@@ -12,7 +12,7 @@ You move around with Vimium-style keys, can have the page read aloud by a local 
 - **Vimium-style keys.** If you know [Vimium](https://github.com/philc/vimium), you already know yomu: `f` to follow links, `j`/`k` to scroll, `o` to open, `H`/`L` to go back and forward. The mouse works too.
 - **Read aloud in 31 languages.** `S` reads the page with [Supertonic 3](https://huggingface.co/Supertone/supertonic-3), a high-quality TTS model that runs entirely on your machine. The text of the page is never sent anywhere.
 - **Translation that keeps the original.** Inspired by [Immersive Translate](https://immersivetranslate.com/), `E` places the translation right under each original paragraph, and `e` replaces the original instead. Translation uses Google Translate, so the text is sent to Google.
-- **Private mode with Tor (experimental).** `yomu --private` routes all traffic through Tor and keeps no history, tabs or cookies.
+- **Private mode with Tor (experimental).** All traffic goes through Tor, and no history, tabs or cookies are kept. Start yomu with `--private`, or switch in the settings (`gs`).
 - **Interface in English, Japanese and Korean.** The language follows your system and can be changed in the settings.
 
 yomu does not run JavaScript. Pages that build their content with JavaScript (social media, web apps) cannot be read; press `gx` to open such a page in your usual browser.
@@ -111,6 +111,7 @@ You can also click links (middle-click or Ctrl+click for a new tab), click tabs 
 - **Save cookies to a file**: remember cookie consent and logins between runs.
 - **Remove ad and tracking links**: strip tracking parameters such as `utm_*` from links and drop links to ad and tracking services.
 - **Show images**: draw images inside the terminal (Kitty, Ghostty, iTerm2, WezTerm and others; other terminals get a rough block-character rendering).
+- **Private mode (Tor)**: turning it on restarts yomu in private mode, and turning it off returns to normal mode (the same as `gp`).
 
 History, bookmarks and your open tabs are saved under `~/.local/share/yomu/`, and tabs are reopened the next time you start yomu.
 
@@ -125,7 +126,7 @@ yomu picks the language of the page and reads it in one of 31 languages, includi
 
 ### Private mode (experimental)
 
-Start yomu with `--private`, or press `gp` at any time. yomu restarts itself so that nothing is shared with normal mode.
+To use private mode, start yomu with `--private`, or switch at any time with "Private mode" in the settings (`gs`) or with `gp`. yomu restarts itself each time you switch, so that nothing is shared with normal mode.
 
 - All traffic goes through Tor, using [Arti](https://gitlab.torproject.org/tpo/core/arti) built into yomu. DNS lookups happen at the Tor exit, and `.onion` sites work.
 - Each site gets its own Tor circuit, like first-party isolation in Tor Browser.
