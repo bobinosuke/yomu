@@ -34,6 +34,8 @@ tokio = { version = "1", features = ["rt-multi-thread", "net", "io-util"] }
 # プライベートモードの通信 (Tor)
 arti-client = { version = "0.47", features = ["onion-service-client"] }
 tor-rtcompat = "0.47"
+# Arti が使う liblzma を組み込む (手元の Homebrew の xz に頼ると、xz のない Mac で起動できないため)
+lzma-sys = { version = "0.1", features = ["static"] }
 psl = "2" # 画像の要求の sec-fetch-site (same-site か cross-site か。サブドメインを同じサイトとして扱う)
 cookie = "0.18" # Cookie をファイルに残すときの読み書き (settings の save_cookies)
 encoding_rs = "0.8"

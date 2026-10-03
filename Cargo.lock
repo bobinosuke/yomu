@@ -9458,6 +9458,7 @@ dependencies = [
  "html5ever 0.36.1",
  "image",
  "libmimalloc-sys",
+ "lzma-sys",
  "mimalloc",
  "pdf-extract",
  "psl",
