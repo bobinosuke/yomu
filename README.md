@@ -6,6 +6,8 @@ English | [日本語](README.ja.md) | [한국어](README.ko.md)
 It pulls the main text out of a page and shows it with its headings, lists, tables and code intact, without the navigation, ads and footers around it.
 You move around with Vimium-style keys, can have the page read aloud by a local text-to-speech model, and can translate it while keeping the original in view.
 
+<img src="docs/images/main-text.png" width="760" alt="yomu showing the main text of a chapter of The Rust Programming Language">
+
 ## Features
 
 - yomu extracts the main content of each page and lays it out in the terminal. Press `a` to see the whole page instead. PDFs are shown as text, and other files are saved to `~/Downloads`.
@@ -120,9 +122,15 @@ History, bookmarks and your open tabs are saved under `~/.local/share/yomu/`, an
 The first time you press `S`, yomu asks before downloading what it needs (about 770 MB in total): the Supertonic 3 model, dictionaries for reading English words inside Japanese text, and language-detection data. Everything is stored in `~/.cache/yomu`.
 yomu detects the language of the page and can read 31 languages, including English, Japanese and Korean. Select text in visual mode and press `S` to read just that part.
 
+<img src="docs/images/read-aloud.png" width="760" alt="yomu reading a chapter of The Rust Programming Language aloud, with its progress in the status line">
+
 ### Translation
 
 `E` shows the translation under each original paragraph, and `e` replaces the original. Press the same key again to go back to the original. You can also select text and press `E` to translate only the selection. Pages are translated into the interface language. The first time you translate, yomu asks whether it is OK to send the text to Google (`y`/`n`); after `y` it does not ask again.
+
+<img src="docs/images/translation.png" width="760" alt="A Japanese Wikipedia article with an English translation under each paragraph">
+
+<sub>The page shown is [Rust (プログラミング言語)](https://ja.wikipedia.org/wiki/Rust_(%E3%83%97%E3%83%AD%E3%82%B0%E3%83%A9%E3%83%9F%E3%83%B3%E3%82%B0%E8%A8%80%E8%AA%9E)) on Japanese Wikipedia, licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).</sub>
 
 ### Private mode (experimental)
 
