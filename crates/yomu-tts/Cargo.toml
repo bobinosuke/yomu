@@ -1,0 +1,31 @@
+[package]
+name = "yomu-tts"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/bobinosuke/yomu"
+description = "yomu の読み上げ: Supertonic 3 での合成と、日本語の文の中の英単語のカタカナ読み (OpenJTalk 相当の辞書引きと kanalizer)"
+
+[dependencies]
+regex = "1"
+# 言語の推定。短い文 (1 文ほど) でも当たる。統計データ (約 170MB) は埋め込まず、初回にダウンロードして読む
+# (vendor/lingua は lingua 1.8.0 をそのように変えたもの)
+lingua = { path = "../../vendor/lingua", default-features = false, features = [
+    "japanese", "english", "korean", "arabic", "bulgarian", "czech", "danish", "german", "greek", "spanish", "estonian",
+    "finnish", "french", "hindi", "croatian", "hungarian", "indonesian", "italian", "lithuanian", "latvian", "dutch",
+    "polish", "portuguese", "romanian", "russian", "slovak", "slovene", "swedish", "turkish", "ukrainian", "vietnamese",
+    "chinese", "thai", "persian", "urdu",
+] }
+kanalizer = { git = "https://github.com/VOICEVOX/kanalizer", rev = "98758acdc6cb80611958ade58cb05191e2658462" }
+cpal = "0.16"
+hound = "3.5"
+reqwest = { version = "0.12", features = ["blocking", "json"] }
+zip = "2"
+tar = "0.4"
+flate2 = "1"
+sha2 = "0.10"
+memmap2 = "0.9"
+unicode-normalization = "0.1"
+ort = "=2.0.0-rc.13"
+serde_json = "1"
+

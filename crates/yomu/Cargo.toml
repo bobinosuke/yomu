@@ -1,0 +1,51 @@
+[package]
+name = "yomu"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/bobinosuke/yomu"
+description = "本文だけを抜き出して読む、日本語向けの軽量 CLI ブラウザ"
+
+[[bin]]
+name = "yomu"
+path = "src/main.rs"
+
+[dependencies]
+yomu-tts = { path = "../yomu-tts" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+regex = "1"
+unicode-width = "0.2"
+unicode-normalization = "0.1"
+ratatui = "0.30"
+# 画像を端末の中に描く (設定の images)。Kitty・iTerm2・Sixel、どれもなければ半角ブロックの色で描く
+ratatui-image = { version = "11", default-features = false, features = ["crossterm", "image-defaults"] }
+image = "0.25"
+chrono = { version = "0.4", default-features = false, features = ["clock"] } # 履歴の日付 (手元の時刻)
+# メモリの管理。macOS の malloc は解放した大きな領域を抱えたままにし、大きいページを開くたびにメモリが増えて見えたので替える
+mimalloc = { version = "0.1", default-features = false }
+libmimalloc-sys = { version = "0.1", default-features = false, features = ["extended", "override"] } # mi_collect (使い終わった空きをすぐ OS に返す)。override で C++ の部分 (読み上げの ONNX Runtime) の malloc も mimalloc にする (macOS の malloc は解放した領域を返さない)
+crossterm = "0.29"
+# 通信。接続の挨拶 (TLS・HTTP/2 の指紋) をブラウザ (Firefox) と同じにする。User-Agent は yomu のまま。
+# 指紋だけで弾くサイト (Cloudflare の遮断など) でも読めるように (curl_cffi と同じ)
+wreq = { version = "=6.0.0-rc.31", features = ["cookies", "form", "gzip", "brotli", "deflate", "zstd", "socks"] }
+wreq-util = "=3.0.0-rc.14"
+tokio = { version = "1", features = ["rt-multi-thread", "net", "io-util"] }
+# プライベートモードの通信 (Tor)
+arti-client = { version = "0.47", features = ["onion-service-client"] }
+tor-rtcompat = "0.47"
+psl = "2" # 画像の要求の sec-fetch-site (same-site か cross-site か。サブドメインを同じサイトとして扱う)
+cookie = "0.18" # Cookie をファイルに残すときの読み書き (settings の save_cookies)
+encoding_rs = "0.8"
+chardetng = "1"
+rs-trafilatura = "=0.2.2"
+dom_query = "0.24"
+html5ever = "0.36"
+pdf-extract = "0.12"
+scraper = "0.27"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+core-foundation = "0.10" # 入力ソースの API (ime.rs)
+
+[dev-dependencies]
+flate2 = "1"

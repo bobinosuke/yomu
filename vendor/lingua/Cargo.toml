@@ -1,0 +1,108 @@
+# lingua 1.8.0 (https://github.com/pemistahl/lingua-rs, Apache-2.0) を yomu 向けに変えたもの。
+# 言語ごとの統計データを埋め込まず、実行時にディレクトリから読む (src/file.rs)。データは yomu が初回にダウンロードする。
+# 変えたのは src/file.rs と src/lib.rs (Python・wasm 向けの部分を除き、set_models_directory を公開) だけ
+[package]
+name = "lingua"
+version = "1.8.0"
+authors = ["Peter M. Stahl <pemistahl@gmail.com>"]
+license = "Apache-2.0"
+edition = "2024"
+
+[lib]
+test = false
+doctest = false
+
+[dependencies]
+counter = "0.7.0"
+dashmap = "6.1.0"
+fastrand = "2.3.0"
+fst = "0.4.7"
+itertools = "0.14.0"
+maplit = "1.0.2"
+memmap2 = "0.9"
+rayon = "1.11.0"
+regex = "1.12.2"
+serde = { version = "1.0.228", features = ["derive"] }
+strum = "0.27.2"
+strum_macros = "0.27.2"
+
+[lints.rust]
+unexpected_cfgs = { level = "allow" }
+
+[features]
+default = []
+afrikaans = []
+albanian = []
+arabic = []
+armenian = []
+azerbaijani = []
+basque = []
+belarusian = []
+bengali = []
+bokmal = []
+bosnian = []
+bulgarian = []
+catalan = []
+chinese = []
+croatian = []
+czech = []
+danish = []
+dutch = []
+english = []
+esperanto = []
+estonian = []
+finnish = []
+french = []
+ganda = []
+georgian = []
+german = []
+greek = []
+gujarati = []
+hebrew = []
+hindi = []
+hungarian = []
+icelandic = []
+indonesian = []
+irish = []
+italian = []
+japanese = []
+kazakh = []
+korean = []
+latin = []
+latvian = []
+lithuanian = []
+macedonian = []
+malay = []
+maori = []
+marathi = []
+mongolian = []
+nynorsk = []
+persian = []
+polish = []
+portuguese = []
+punjabi = []
+romanian = []
+russian = []
+serbian = []
+shona = []
+slovak = []
+slovene = []
+somali = []
+sotho = []
+spanish = []
+swahili = []
+swedish = []
+tagalog = []
+tamil = []
+telugu = []
+thai = []
+tsonga = []
+tswana = []
+turkish = []
+ukrainian = []
+urdu = []
+vietnamese = []
+welsh = []
+xhosa = []
+yoruba = []
+zulu = []

@@ -1,0 +1,5 @@
+[workspace]
+members = ["crates/*"]
+# 手を入れた外部のライブラリ。yomu のテストや clippy の対象にしない
+exclude = ["vendor/lingua"]
+resolver = "3"
