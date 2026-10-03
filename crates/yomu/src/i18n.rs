@@ -85,6 +85,51 @@ fn mac_preferred() -> Option<String> {
     s.split('"').nth(1).map(str::to_string)
 }
 
+/// 読み上げに対応している言語の名前 (コード, 日本語, 英語, 韓国語)。状態行に出す
+const LANGUAGE_NAMES: [(&str, &str, &str, &str); 31] = [
+    ("ja", "日本語", "Japanese", "일본어"),
+    ("en", "英語", "English", "영어"),
+    ("ko", "韓国語", "Korean", "한국어"),
+    ("ar", "アラビア語", "Arabic", "아랍어"),
+    ("bg", "ブルガリア語", "Bulgarian", "불가리아어"),
+    ("cs", "チェコ語", "Czech", "체코어"),
+    ("da", "デンマーク語", "Danish", "덴마크어"),
+    ("de", "ドイツ語", "German", "독일어"),
+    ("el", "ギリシャ語", "Greek", "그리스어"),
+    ("es", "スペイン語", "Spanish", "스페인어"),
+    ("et", "エストニア語", "Estonian", "에스토니아어"),
+    ("fi", "フィンランド語", "Finnish", "핀란드어"),
+    ("fr", "フランス語", "French", "프랑스어"),
+    ("hi", "ヒンディー語", "Hindi", "힌디어"),
+    ("hr", "クロアチア語", "Croatian", "크로아티아어"),
+    ("hu", "ハンガリー語", "Hungarian", "헝가리어"),
+    ("id", "インドネシア語", "Indonesian", "인도네시아어"),
+    ("it", "イタリア語", "Italian", "이탈리아어"),
+    ("lt", "リトアニア語", "Lithuanian", "리투아니아어"),
+    ("lv", "ラトビア語", "Latvian", "라트비아어"),
+    ("nl", "オランダ語", "Dutch", "네덜란드어"),
+    ("pl", "ポーランド語", "Polish", "폴란드어"),
+    ("pt", "ポルトガル語", "Portuguese", "포르투갈어"),
+    ("ro", "ルーマニア語", "Romanian", "루마니아어"),
+    ("ru", "ロシア語", "Russian", "러시아어"),
+    ("sk", "スロバキア語", "Slovak", "슬로바키아어"),
+    ("sl", "スロベニア語", "Slovenian", "슬로베니아어"),
+    ("sv", "スウェーデン語", "Swedish", "스웨덴어"),
+    ("tr", "トルコ語", "Turkish", "튀르키예어"),
+    ("uk", "ウクライナ語", "Ukrainian", "우크라이나어"),
+    ("vi", "ベトナム語", "Vietnamese", "베트남어"),
+];
+
+/// 言語のコード (ISO 639-1) の、今の画面の言語での名前 (知らないコードならコードのまま)
+pub fn language_name(code: &str) -> &str {
+    let Some(&(_, ja, en, ko)) = LANGUAGE_NAMES.iter().find(|(c, ..)| *c == code) else { return code };
+    match lang() {
+        Lang::Ja => ja,
+        Lang::En => en,
+        Lang::Ko => ko,
+    }
+}
+
 static EN: LazyLock<HashMap<&str, &str>> = LazyLock::new(|| en::TABLE.iter().copied().collect());
 static KO: LazyLock<HashMap<&str, &str>> = LazyLock::new(|| ko::TABLE.iter().copied().collect());
 
@@ -128,6 +173,16 @@ mod tests {
         assert_eq!(Lang::from_locale("en-US"), Some(Lang::En));
         assert_eq!(Lang::from_locale("ko_KR.UTF-8"), Some(Lang::Ko));
         assert_eq!(Lang::from_locale("fr_FR.UTF-8"), None);
+    }
+
+    /// 読み上げの言語の名前の表は、どれも読み上げが読める言語のコード
+    #[test]
+    fn language_names_are_speakable_languages() {
+        for (code, ..) in LANGUAGE_NAMES {
+            assert!(yomu_tts::sentences::Lang::from_code(code).is_some(), "{code}");
+        }
+        assert_eq!(language_name("en"), "英語");
+        assert_eq!(language_name("xx"), "xx");
     }
 
     #[test]

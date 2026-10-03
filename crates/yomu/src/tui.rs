@@ -2801,7 +2801,7 @@ impl App {
     fn follow_speech(&mut self, tab: u64, doc: usize, blk: usize) {
         let Some(i) = self.tab_index(tab) else { return };
         let n = self.tabs[i].doc.as_ref().map_or(0, |d| d.blocks.len());
-        let lang = self.speech.lang.map_or("", Lang::name);
+        let lang = self.speech.lang.map_or("", |l| crate::i18n::language_name(l.code()));
         self.say(tab, t!("読み上げ中 ({lang}) {i}/{n} (S で停止)", lang = lang, i = blk + 1, n = n));
         if i != self.cur || self.doc().is_none_or(|d| Arc::as_ptr(&d) as usize != doc) {
             return;
