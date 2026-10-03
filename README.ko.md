@@ -19,12 +19,33 @@ yomu는 페이지의 JavaScript를 실행하지 않습니다. SNS나 웹 앱처�
 
 ## 설치
 
-yomu는 macOS에서 개발하고 동작을 확인하고 있습니다. Linux에서도 빌드될 수 있지만 아직 확인하지 않았습니다.
-Rust 1.92 이상이 필요합니다([rustup](https://rustup.rs/)으로 설치하는 것이 가장 간단합니다).
+yomu는 macOS에서 개발하고 동작을 확인하고 있습니다. 빌드된 바이너리는 Apple Silicon Mac용입니다.
+
+### Homebrew
+
+```sh
+brew install bobinosuke/tap/yomu
+```
+
+설치한 뒤에는 어느 터미널에서든 `yomu`로 실행할 수 있습니다.
+
+### 설치 스크립트
+
+```sh
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/bobinosuke/yomu/releases/latest/download/yomu-installer.sh | sh
+```
+
+`yomu`를 `~/.local/bin`에 두고, 필요하면 `PATH`에 추가합니다.
+
+### Cargo
+
+Intel Mac을 쓰거나 직접 빌드하고 싶다면 Cargo로 설치할 수 있습니다. Rust 1.92 이상이 필요합니다([rustup](https://rustup.rs/)으로 설치하는 것이 가장 간단합니다).
 
 ```sh
 cargo install --git https://github.com/bobinosuke/yomu yomu
 ```
+
+Cargo는 `yomu`를 `~/.cargo/bin`에 둡니다. 설치한 뒤 `yomu`를 찾을 수 없다면 `~/.zshenv`(또는 사용하는 셸의 설정 파일)에 `. "$HOME/.cargo/env"`를 추가해 주세요.
 
 ### 소스에서 빌드하기
 
@@ -35,7 +56,7 @@ cargo build --release
 ./target/release/yomu
 ```
 
-빌드하는 동안 읽어 주기에 쓰는 ONNX Runtime의 빌드된 바이너리를 내려받으므로, 처음 빌드할 때는 네트워크 연결이 필요합니다.
+빌드하는 동안 읽어 주기에 쓰는 ONNX Runtime의 빌드된 바이너리를 내려받으므로, 처음 빌드할 때는 네트워크 연결이 필요합니다. Linux에서도 동작할 수 있지만 아직 확인하지 않았습니다.
 
 ## 사용법
 

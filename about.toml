@@ -1,0 +1,22 @@
+# 配るバイナリに含める、依存のライセンスの一覧 (THIRD-PARTY-LICENSES.txt) を作る cargo-about の設定。
+# 作り方: cargo about generate -m crates/yomu/Cargo.toml about.hbs > THIRD-PARTY-LICENSES.txt
+# 「どちらかを選べる」ライセンスでは、この並びで先にあるものを選ぶ
+accepted = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "0BSD",
+    "Unlicense",
+    "CC0-1.0",
+    "BSL-1.0",
+    "Unicode-3.0",
+    "Unicode-DFS-2016",
+    "CDLA-Permissive-2.0",
+    "NCSA",
+    "WTFPL",
+    "MPL-2.0",
+]

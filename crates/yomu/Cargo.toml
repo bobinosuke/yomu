@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/bobinosuke/yomu"
-description = "本文だけを抜き出して読む、日本語向けの軽量 CLI ブラウザ"
+homepage = "https://github.com/bobinosuke/yomu"
+description = "A lightweight terminal web browser made for reading"
 
 [[bin]]
 name = "yomu"
@@ -51,3 +52,7 @@ core-foundation = "0.10" # 入力ソースの API (ime.rs)
 
 [dev-dependencies]
 flate2 = "1"
+
+# 配るファイルに、依存のライセンスの一覧 (about.toml で作る) を含める
+[package.metadata.dist]
+include = ["../../THIRD-PARTY-LICENSES.txt"]

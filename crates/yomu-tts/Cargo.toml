@@ -29,3 +29,6 @@ unicode-normalization = "0.1"
 ort = "=2.0.0-rc.13"
 serde_json = "1"
 
+# 読み上げを試す開発用のコマンド (src/bin/yomu-tts.rs) は配らない
+[package.metadata.dist]
+dist = false

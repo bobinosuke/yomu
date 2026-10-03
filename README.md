@@ -19,12 +19,33 @@ yomu does not run JavaScript. Pages that build their content with JavaScript (so
 
 ## Installation
 
-yomu is developed and tested on macOS. It may build on Linux, but this is not tested yet.
-You need Rust 1.92 or later ([rustup](https://rustup.rs/) is the easiest way to get it).
+yomu is developed and tested on macOS. Prebuilt binaries are available for Apple Silicon Macs.
+
+### Homebrew
+
+```sh
+brew install bobinosuke/tap/yomu
+```
+
+After that, run `yomu` from any terminal.
+
+### Install script
+
+```sh
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/bobinosuke/yomu/releases/latest/download/yomu-installer.sh | sh
+```
+
+This places `yomu` in `~/.local/bin` and adds it to your `PATH` if needed.
+
+### Cargo
+
+If you have an Intel Mac, or prefer to build it yourself, install yomu with Cargo. This needs Rust 1.92 or later ([rustup](https://rustup.rs/) is the easiest way to get it).
 
 ```sh
 cargo install --git https://github.com/bobinosuke/yomu yomu
 ```
+
+Cargo puts `yomu` in `~/.cargo/bin`. If your shell cannot find `yomu` afterwards, add `. "$HOME/.cargo/env"` to `~/.zshenv` (or your shell's startup file).
 
 ### Building from source
 
@@ -35,7 +56,7 @@ cargo build --release
 ./target/release/yomu
 ```
 
-The build downloads a prebuilt ONNX Runtime (used for text-to-speech), so it needs a network connection the first time.
+The build downloads a prebuilt ONNX Runtime (used for text-to-speech), so it needs a network connection the first time. Linux may work, but it is not tested yet.
 
 ## Usage
 
