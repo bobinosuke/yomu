@@ -8,12 +8,12 @@ You move around with Vimium-style keys, can have the page read aloud by a local 
 
 ## Features
 
-- **Reading first.** yomu extracts the main content of each page and lays it out cleanly in the terminal. Press `a` to switch to the whole page. PDFs are shown as text, and other files are saved to `~/Downloads`.
-- **Vimium-style keys.** If you know [Vimium](https://github.com/philc/vimium), you already know yomu: `f` to follow links, `j`/`k` to scroll, `o` to open, `H`/`L` to go back and forward. The mouse works too.
-- **Read aloud in 31 languages.** `S` reads the page with [Supertonic 3](https://huggingface.co/Supertone/supertonic-3), a high-quality TTS model that runs entirely on your machine. The text of the page is never sent anywhere.
-- **Translation that keeps the original.** Inspired by [Immersive Translate](https://immersivetranslate.com/), `E` places the translation right under each original paragraph, and `e` replaces the original instead. Translation uses Google Translate, so the text is sent to Google.
-- **Private mode with Tor (experimental).** All traffic goes through Tor, and no history, tabs or cookies are kept. Start yomu with `--private`, or switch in the settings (`gs`).
-- **Interface in English, Japanese and Korean.** The language follows your system and can be changed in the settings.
+- yomu extracts the main content of each page and lays it out in the terminal. Press `a` to see the whole page instead. PDFs are shown as text, and other files are saved to `~/Downloads`.
+- The keys follow [Vimium](https://github.com/philc/vimium): `j`/`k` to scroll, `f` to follow links, `o` to open, `H`/`L` to go back and forward. The mouse works too.
+- `S` reads the page aloud in any of 31 languages with [Supertonic 3](https://huggingface.co/Supertone/supertonic-3), a high-quality TTS model that runs entirely on your machine. The text of the page is never sent anywhere.
+- `E` puts a translation under each original paragraph, in the style of [Immersive Translate](https://immersivetranslate.com/), and `e` replaces the original instead. Translation uses Google Translate, so the text is sent to Google.
+- Private mode (experimental) sends all traffic through Tor and keeps no history, tabs or cookies. Start yomu with `--private`, or switch in the settings (`gs`).
+- The interface is available in English, Japanese and Korean. It follows your system language, and you can change it in the settings.
 
 yomu does not run JavaScript. Pages that build their content with JavaScript (social media, web apps) cannot be read; press `gx` to open such a page in your usual browser.
 
@@ -118,7 +118,7 @@ History, bookmarks and your open tabs are saved under `~/.local/share/yomu/`, an
 ### Reading aloud
 
 The first time you press `S`, yomu asks before downloading what it needs (about 770 MB in total): the Supertonic 3 model, dictionaries for reading English words inside Japanese text, and language-detection data. Everything is stored in `~/.cache/yomu`.
-yomu picks the language of the page and reads it in one of 31 languages, including English, Japanese, Korean, French, German, Spanish and Russian. Select text in visual mode and press `S` to read just that part.
+yomu detects the language of the page and can read 31 languages, including English, Japanese and Korean. Select text in visual mode and press `S` to read just that part.
 
 ### Translation
 
@@ -134,7 +134,7 @@ To use private mode, start yomu with `--private`, or switch at any time with "Pr
 - yomu presents itself as Tor Browser, matching its User-Agent, TLS and HTTP/2 fingerprints and headers.
 - History, tabs and cookies are never written to disk. Translation and `gx` are disabled, because they would leave Tor.
 
-This is experimental. Individual requests are hard to tell apart from Tor Browser, but yomu behaves differently: it does not load JavaScript, CSS or fonts, and loads only some images. A site that looks closely at how pages are loaded can guess that you are using yomu. What it hides is your IP address and your movement between sites. If you need strong anonymity, use Tor Browser.
+This feature is experimental. It hides your IP address, but sites can tell from the way pages are loaded that you are using yomu, so it is not as anonymous as Tor Browser. If you need strong anonymity, use Tor Browser.
 
 ## Acknowledgements
 
